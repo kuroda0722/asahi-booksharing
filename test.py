@@ -9,14 +9,14 @@ import csv
 import os
 
 app = Flask(__name__)
-login_manager = LoginManager()
-login_manager.init_app(app)
+#login_manager = LoginManager()
+#login_manager.init_app(app)
 
-class User(UserMixin):
-    def __init__(self, id, name, password):
-        self.id = id
-        self.name = name
-        self.password = password
+#class User(UserMixin):
+#    def __init__(self, id, name, password):
+#        self.id = id
+#        self.name = name
+#        self.password = password
 
 # ログイン用ユーザー作成
 #users = {
