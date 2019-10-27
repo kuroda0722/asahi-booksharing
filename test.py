@@ -176,45 +176,6 @@ def about():
     )
 
 
-# ログインしないと表示されないパス
-@app.route('/protected/')
-@login_required
-def protected():
-    return Response('''
-    protected<br />
-    <a href="/logout/">logout</a>
-    ''')
-
-# ログインパス
-@app.route('/login/', methods=["GET", "POST"])
-def login():
-    if(request.method == "POST"):
-        # ユーザーチェック
-        if(request.form["username"] in user_check and request.form["password"] == user_check[request.form["username"]]["password"]):
-            # ユーザーが存在した場合はログイン
-            login_user(users.get(user_check[request.form["username"]]["id"]))
-            return Response('''
-            ogin success!<br />
-            #<a href="/protected/">protected</a><br />
-            <a href="/logout/">logout</a>
-            ''')
-        else:
-            return abort(401)
-    else:
-        return render_template("login.html")
-
-# ログアウトパス
-@app.route('/logout/')
-#@login_required
-def logout():
-    logout_user()
-    
-    return Response('''
-    logout success!<br />
-    <a href="/login/">login</a>
-    ''')
-
-
 #@app.route('/')
 #def index():
 #    return "Hello World !"  
