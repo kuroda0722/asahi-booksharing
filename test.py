@@ -63,7 +63,9 @@ for file in file_list:
     book.append( book_temp)
 print(book)       
 
-
+@app.route('/')
+def index():
+    return "Hello World !"
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0')
