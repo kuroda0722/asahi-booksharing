@@ -38,11 +38,10 @@ count = 0
 book = []
 for file in file_list:
     book_temp = book_dt()
-    with open('data/'+file) as f:
+    with open('./data/'+file) as f:
         reader = csv.reader(f)
         for row in reader:
             if(row[0] == 'title'):
-                print(row[1])
                 book_temp.title = row[1]
             if(row[0] == 'img'):
                 book_temp.img = row[1]
@@ -58,7 +57,7 @@ for file in file_list:
                     print("貸し出し中")
                 else:
                     print("いける")
-    book.append( book_temp)
+    book.append(book_temp)
 print(book)  
 
 class review_dt:
@@ -121,7 +120,7 @@ def bookpage(title = ''):
         review_str +=(r.name + r.rank + r.text)
         review_str += '</br>'
     
-        return render_template(
+    return render_template(
         'book.html',
         year=datetime.now().year,
         title=b.title,
