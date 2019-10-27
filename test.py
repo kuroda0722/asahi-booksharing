@@ -27,7 +27,7 @@ users = {
 def load_user(user_id):
     return users.get(int(user_id))
 
- ユーザーチェックに使用する辞書作成
+# ユーザーチェックに使用する辞書作成
 nested_dict = lambda: defaultdict(nested_dict)
 user_check = nested_dict()
 for i in users.values():
