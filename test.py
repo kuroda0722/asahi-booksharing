@@ -7,6 +7,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, U
 from collections import defaultdict
 import csv
 import os
+import codecs
 
 app = Flask(__name__)
 
@@ -68,7 +69,7 @@ count = 0
 book = []
 for file in file_list:
     book_temp = book_dt()
-    with open('./data/'+file) as f:
+    with codecs.open('./data/'+file, 'r', 'utf-8', 'ignore') as f:
         reader = csv.reader(f)
         for row in reader:
             if(row[0] == 'title'):
