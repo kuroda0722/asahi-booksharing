@@ -12,27 +12,27 @@ app = Flask(__name__)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-#class User(UserMixin):
-#    def __init__(self, id, name, password):
-#        self.id = id
-#        self.name = name
-#        self.password = password
+class User(UserMixin):
+    def __init__(self, id, name, password):
+        self.id = id
+        self.name = name
+        self.password = password
 
 # ログイン用ユーザー作成
-#users = {
-#    1: User(1, "user01", "password"),
-#    2: User(2, "user02", "password"),
-#}
-#@login_manager.user_loader
-#def load_user(user_id):
-#    return users.get(int(user_id))
+users = {
+    1: User(1, "numata", "kuroda"),
+    2: User(2, "kuroda", "numata"),
+}
+@login_manager.user_loader
+def load_user(user_id):
+    return users.get(int(user_id))
 
-# ユーザーチェックに使用する辞書作成
-#nested_dict = lambda: defaultdict(nested_dict)
-#user_check = nested_dict()
-#for i in users.values():
-#    user_check[i.name]["password"] = i.password
-#    user_check[i.name]["id"] = i.id
+ ユーザーチェックに使用する辞書作成
+nested_dict = lambda: defaultdict(nested_dict)
+user_check = nested_dict()
+for i in users.values():
+    user_check[i.name]["password"] = i.password
+    user_check[i.name]["id"] = i.id
 
 
 class review_dt:
