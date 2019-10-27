@@ -9,8 +9,11 @@ import csv
 import os
 
 app = Flask(__name__)
+
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+app.config['SECRET_KEY'] = "secret"
 
 class User(UserMixin):
     def __init__(self, id, name, password):
@@ -212,6 +215,7 @@ def logout():
     logout success!<br />
     <a href="/login/">login</a>
     ''')
+
 #@app.route('/')
 #def index():
 #    return "Hello World !"  
