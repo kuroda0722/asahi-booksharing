@@ -86,10 +86,71 @@ class book_dt:
         self.date = ''
 
      
-
 @app.route('/')
-def index():
-    return "Hello World !"  
+@app.route('/home')
+def home():
+    """Renders the home page."""
+    str = ''
+    for b in book:
+        str+='<a href="./book/'+b.title+'">'
+        str+=('<img src = "static/' + b.img + '">')
+        str+=b.title
+        str+='</a>   '
+    return render_template(
+        'index.html',
+        title='Home Page',
+        year=datetime.now().year,
+        message=str
+    )
+
+@app.route('/book')
+@app.route('/book/<title>')
+def bookpage(title = ''):
+    print(title)
+    b = 0
+    for bb in book:
+        if bb.title == title:
+            b = bb
+    lend_str=''
+    if b.lend:
+        lend_str='貸し出し中です。'
+    else:
+        lend_str='貸し出し可能です。'
+    review_str = ''
+    for r in b.review:
+        review_str +=(r.name + r.rank + r.text)
+        review_str += '</br>'
+    
+        return render_template(
+        'book.html',
+        year=datetime.now().year,
+        title=b.title,
+        review = review_str,
+        lend = lend_str
+    )
+
+@app.route('/contact')
+def contact():
+    """Renders the contact page."""
+    return render_template(
+        'contact.html',
+        title='Contact',
+        year=datetime.now().year,
+        message='Your contact page.'
+    )
+
+@app.route('/about')
+def about():
+    """Renders the about page."""
+    return render_template(
+        'about.html',
+        title='About',
+        year=datetime.now().year,
+        message='Your application description page.'
+    )
+#@app.route('/')
+#def index():
+#    return "Hello World !"  
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0')
