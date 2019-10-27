@@ -1,1 +1,1 @@
-python test.py webpage
+web: python test.py
