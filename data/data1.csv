@@ -1,7 +1,6 @@
-,
-title,猫でもわかるC言語,
-img,img1.jpg,
+﻿title,猫でもわかるC言語,
+img,data1.csv.jpg,
 level,1,
-review,5,numata,うんこでした。
-review,3,kuroda,正解
-lend,1
+review,5,numata,うんこでした。,
+review,3,kuroda,正解,
+lend,1,
