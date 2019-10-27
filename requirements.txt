@@ -1,3 +1,1 @@
 Flask==1.1
-Werkzeug==0.16.0
-wsgiref==0.1.2
