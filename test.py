@@ -38,7 +38,7 @@ count = 0
 book = []
 for file in file_list:
     book_temp = book_dt()
-    with open('./data/'+file) as f:
+    with open('data/'+file) as f:
         reader = csv.reader(f)
         print("aaaa")
         print (reader)
