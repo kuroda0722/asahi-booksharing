@@ -1,1 +1,1 @@
-web: gunicorn flask_heroku_example.wsgi:application --log-file -
+web: gunicorn test:app --log-file -
