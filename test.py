@@ -122,7 +122,7 @@ def home():
     str = ''
     for b in book:
         str+='<a href="./book/'+b.title+'">'
-        str+=('<img src = "static/' + b.img + '">')
+        str+=('<img src = "./data/' + b.img + '">')
         str+=b.title
         str+='</a>   '
     return render_template(
