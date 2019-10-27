@@ -19,20 +19,20 @@ class User(UserMixin):
         self.password = password
 
 # ログイン用ユーザー作成
-users = {
-    1: User(1, "user01", "password"),
-    2: User(2, "user02", "password"),
-}
-@login_manager.user_loader
-def load_user(user_id):
-    return users.get(int(user_id))
+#users = {
+#    1: User(1, "user01", "password"),
+#    2: User(2, "user02", "password"),
+#}
+#@login_manager.user_loader
+#def load_user(user_id):
+#    return users.get(int(user_id))
 
 # ユーザーチェックに使用する辞書作成
-nested_dict = lambda: defaultdict(nested_dict)
-user_check = nested_dict()
-for i in users.values():
-    user_check[i.name]["password"] = i.password
-    user_check[i.name]["id"] = i.id
+#nested_dict = lambda: defaultdict(nested_dict)
+#user_check = nested_dict()
+#for i in users.values():
+#    user_check[i.name]["password"] = i.password
+#    user_check[i.name]["id"] = i.id
 
 
 class review_dt:
