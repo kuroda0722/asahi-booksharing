@@ -1,3 +1,6 @@
+# coding: utf-8
+
+
 from datetime import datetime
 from flask import Flask, request, Response, abort, render_template
 import csv
