@@ -37,6 +37,8 @@ for file in file_list:
     book_temp = book_dt()
     with open('./data/'+file) as f:
         reader = csv.reader(f)
+        print("aaaa")
+        print (reader)
         for row in reader:
             if(row[0] == 'title'):
                 print(row[1])
