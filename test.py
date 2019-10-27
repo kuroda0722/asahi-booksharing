@@ -8,6 +8,30 @@ import os
 
 app = Flask(__name__)
 
+class review_dt:
+    def __init__(self):
+        self.rank = 0
+        self.name = ''
+        self.text = ''
+        self.date = ''
+
+class chat_dt:
+    def __init__(self):
+        self.name = ''
+        self.text = ''
+        self.date = ''
+
+class book_dt:
+    def __init__(self):
+        self.title = ''
+        self.img = ''
+        self.level = 0
+        self.review = []
+        self.chat = chat_dt()
+        self.lend = False
+        self.reserver = ''
+        self.date = ''
+
 file_list = os.listdir("./data")
 
 count = 0  
