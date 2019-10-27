@@ -1,8 +1,29 @@
-# coding: utf-8
-from flask import Flask
-app = Flask(__name__)
-@app.route('/')
-def index():
-    return "Hello World !"
-if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0')
+# coding:utf-8
+import cgitb
+import sys
+import io
+sys.stdin = open(sys.stdin.fileno(),  'r', encoding='UTF-8')
+sys.stdout = open(sys.stdout.fileno(), 'w', encoding='UTF-8')
+sys.stderr = open(sys.stderr.fileno(), 'w', encoding='UTF-8')
+cgitb.enable()
+ 
+print("Content-type: text/html; charset=utf-8")
+print("")
+bb = ccc
+aa = "aaa" + "bbbb"
+HtmlData = """
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <title>Hello World | python</title>
+</head>
+<body>
+<h1>Hello world for Python</h1>
+"""
+HtmlData+=aa
+HtmlData += """
+<h2>‚ ‚ ‚ ‚ </h2>
+</body>
+"""
+ 
+print(HtmlData)
