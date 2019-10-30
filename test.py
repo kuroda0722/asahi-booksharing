@@ -7,6 +7,21 @@ from flask_login import LoginManager, login_user, logout_user, login_required, U
 from collections import defaultdict
 import csv
 import os
+import psycopg2
+
+conn = psycopg2.connect(\
+    host='ec2-54-235-92-43.compute-1.amazonaws.com',\
+    user='yukvwzgkmgumwn',\
+    password='2127634225d512ead95dff681a0b804f8f5a3a468017c734f80d72d3dd84f722',\
+    database='d3tspi511bpse4',\
+    port=5432) 
+cur = conn.cursor()
+cur.execute("SELECT * FROM sample;")
+results = cur.fetchone()
+print(results)
+results = cur.fetchone()
+print(results)
+conn.commit()
 
 app = Flask(__name__)
 
@@ -68,7 +83,7 @@ count = 0
 book = []
 for file in file_list:
     book_temp = book_dt()
-    with open('./data/'+file) as f:
+    with open('./data/'+file, encoding='utf-8') as f:
         reader = csv.reader(f)
         for row in reader:
             if(row[0] == 'title'):
@@ -120,11 +135,15 @@ class book_dt:
 def home():
     """Renders the home page."""
     str = ''
-    for b in book:
-        str+='<a href="./book/'+b.title+'">'
-        str+=('<img src = "./img/' + b.img + '">')
-        str+=b.title
-        str+='</a>   '
+    
+    #for b in book:
+     #   str+='<a href="/book/'+b.title+'">'
+      #  str+=('<img src = "/img/' + b.img + '">')
+       # str+=b.title
+   #     str+='</a>   '
+    cur.execute("SELECT title,img_url FROM book;")
+    data = cur.fetchone()
+    str += ('<img src = "{0}">').format(data[1])
     return render_template(
         'index.html',
         title='Home Page',
@@ -179,13 +198,19 @@ def about():
     )
 
 # ログインしないと表示されないパス
-@app.route('/protected/')
+@app.route('/add_book/', methods=["GET", "POST"])
 @login_required
 def protected():
-    return Response('''
-    protected<br />
-    <a href="/logout/">logout</a>
-    ''')
+    if(request.method == "POST"):
+        title = request.form["name"]
+        img_url = request.form["image"]
+        s = ("INSERT INTO book VALUES ({0}, '{1}', '{2}',{3},'{4}','{5}',{6},'{7}');").format(0,title,img_url,book[0].level,"a","a",0,datetime.now())
+        print(s)
+        cur.execute(s)
+        conn.commit()
+        return render_template('add_book.html')
+    else:
+        return render_template('add_book.html')
 
 # ログインパス
 @app.route('/login/', methods=["GET", "POST"])
@@ -195,10 +220,8 @@ def login():
         if(request.form["username"] in user_check and request.form["password"] == user_check[request.form["username"]]["password"]):
             # ユーザーが存在した場合はログイン
             login_user(users.get(user_check[request.form["username"]]["id"]))
-            return Response('''
-            ogin success!<br />
-            #<a href="/protected/">protected</a><br />
-            <a href="/logout/">logout</a>
+            return  Response('''
+            <meta http-equiv="Refresh" content="0;URL=../add_book">
             ''')
         else:
             return abort(401)
@@ -210,15 +233,13 @@ def login():
 #@login_required
 def logout():
     logout_user()
-    
-    return Response('''
-    logout success!<br />
-    <a href="/login/">login</a>
+    return  Response('''
+        <meta http-equiv="Refresh" content="0;URL=/home">
     ''')
-
-#@app.route('/')
-#def index():
-#    return "Hello World !"  
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0')
+
+
+cur.close()
+conn.close()
