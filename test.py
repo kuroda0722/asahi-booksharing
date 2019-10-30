@@ -241,5 +241,5 @@ if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0')
 
 
-cur.close()
-conn.close()
+#cur.close()
+#conn.close()
