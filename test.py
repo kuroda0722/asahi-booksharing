@@ -135,12 +135,6 @@ class book_dt:
 def home():
     """Renders the home page."""
     str = ''
-    
-    #for b in book:
-     #   str+='<a href="/book/'+b.title+'">'
-      #  str+=('<img src = "/img/' + b.img + '">')
-       # str+=b.title
-   #     str+='</a>   '
     cur.execute("SELECT title,img_url FROM book;")
     for i in range(20):
         data = cur.fetchone()
@@ -158,13 +152,14 @@ def home():
 @app.route('/book')
 @app.route('/book/<title>')
 def bookpage(title = ''):
-    
+    cur.execute(("SELECT * FROM book where title = '{0}';").format(title))
+    data = cur.fetchone()
     return render_template(
         'book.html',
         year=datetime.now().year,
-        title="a",
-        review = "b",
-        lend = "c"
+        title=data[1],
+        review = "test",
+        lend = data[6]
     )
 
 @app.route('/contact')
@@ -192,9 +187,13 @@ def about():
 @login_required
 def protected():
     if(request.method == "POST"):
+        cur.execute("SELECT MAX(number) FROM book;")
+        data = cur.fetchone()
+        num = data[0]+1
+
         title = request.form["name"]
         img_url = request.form["image"]
-        s = ("INSERT INTO book VALUES ({0}, '{1}', '{2}',{3},'{4}','{5}',{6},'{7}');").format(0,title,img_url,book[0].level,"a","a",0,datetime.now())
+        s = ("INSERT INTO book VALUES ({0}, '{1}', '{2}',{3},'{4}','{5}',{6},'{7}');").format(num,title,img_url,1,"a","a",0,datetime.now())
         print(s)
         cur.execute(s)
         conn.commit()
