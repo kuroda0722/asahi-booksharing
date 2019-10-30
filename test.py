@@ -142,8 +142,12 @@ def home():
        # str+=b.title
    #     str+='</a>   '
     cur.execute("SELECT title,img_url FROM book;")
-    data = cur.fetchone()
-    str += ('<img src = "{0}">').format(data[1])
+    for i in range(20):
+        data = cur.fetchone()
+        if data is None:
+            break
+        else:
+            str += ('<a href="/book/{0}"><img src = "{1}" width="300"></a>').format(data[0],data[1])
     return render_template(
         'index.html',
         title='Home Page',
@@ -154,27 +158,13 @@ def home():
 @app.route('/book')
 @app.route('/book/<title>')
 def bookpage(title = ''):
-    print(title)
-    b = 0
-    for bb in book:
-        if bb.title == title:
-            b = bb
-    lend_str=''
-    if b.lend:
-        lend_str='貸し出し中です。'
-    else:
-        lend_str='貸し出し可能です。'
-    review_str = ''
-    for r in b.review:
-        review_str +=(r.name + r.rank + r.text)
-        review_str += '</br>'
     
     return render_template(
         'book.html',
         year=datetime.now().year,
-        title=b.title,
-        review = review_str,
-        lend = lend_str
+        title="a",
+        review = "b",
+        lend = "c"
     )
 
 @app.route('/contact')
