@@ -1,6 +1,4 @@
-# coding: utf-8
-
-
+﻿# coding: utf-8
 from datetime import datetime
 from flask import Flask, request, Response, abort, render_template
 from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin
@@ -55,10 +53,18 @@ for i in users.values():
 
 class review_dt:
     def __init__(self):
+        self.number = 0
         self.rank = 0
         self.name = ''
         self.text = ''
-        self.date = ''
+        self.time = ''
+    def __init__(self,data):
+        self.number = data[0]
+        self.name = data[2]
+        self.rank = data[1]
+        self.text = data[3]
+        self.time= data[4]
+        self.title = data[5]
 
 class chat_dt:
     def __init__(self):
@@ -68,80 +74,39 @@ class chat_dt:
 
 class book_dt:
     def __init__(self):
+        self.number = 0
         self.title = ''
-        self.img = ''
+        self.img_url = ''
         self.level = 0
-        self.review = []
-        self.chat = chat_dt()
+        self.review = ''
+        self.chat = ''
         self.lend = False
         self.reserver = ''
-        self.date = ''
+        self.time  = ''
+    def __init__(self,data):
+        self.number = data[0]
+        self.title = data[1]
+        self.img_url = data[2]
+        self.level= data[3]
+        self.review= data[4]
+        self.chat= data[5]
+        self.lend= data[6]
+        self.time = data[7]
 
-file_list = os.listdir("./data")
-
-count = 0  
-book = []
-for file in file_list:
-    book_temp = book_dt()
-    with open('./data/'+file, encoding='utf-8') as f:
-        reader = csv.reader(f)
-        for row in reader:
-            if(row[0] == 'title'):
-                book_temp.title = row[1]
-            if(row[0] == 'img'):
-                book_temp.img = row[1]
-            if(row[0] == 'review'):
-                review_temp = review_dt()
-                review_temp.rank = row[1]
-                review_temp.name = row[2]
-                review_temp.text = row[3]
-                book_temp.review.append(review_temp)
-                print("☆" + review_temp.rank + review_temp.name +"さん曰く、"+ review_temp.text)
-            if(row[0] == 'lend'):
-                if (row[1] == '1'):
-                    print("貸し出し中")
-                else:
-                    print("いける")
-    book.append(book_temp)
-print(book)  
-
-class review_dt:
-    def __init__(self):
-        self.rank = 0
-        self.name = ''
-        self.text = ''
-        self.date = ''
-
-class chat_dt:
-    def __init__(self):
-        self.name = ''
-        self.text = ''
-        self.date = ''
-
-class book_dt:
-    def __init__(self):
-        self.title = ''
-        self.img = ''
-        self.level = 0
-        self.review = []
-        self.chat = chat_dt()
-        self.lend = False
-        self.reserver = ''
-        self.date = ''
-
-     
 @app.route('/')
 @app.route('/home')
 def home():
     """Renders the home page."""
     str = ''
-    cur.execute("SELECT title,img_url FROM book;")
-    for i in range(20):
+    cur.execute("SELECT * FROM book;")
+    for i in range(99):
         data = cur.fetchone()
         if data is None:
             break
         else:
-            str += ('<a href="/book/{0}"><img src = "{1}" width="300"></a>').format(data[0],data[1])
+            b = book_dt(data)
+            str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><a href="/book/{0}"><h4>{0}</h4><p><img src = "{1}" class="img-responsive"></p></a></div>').format(b.title,b.img_url)
+            
     return render_template(
         'index.html',
         title='Home Page',
@@ -154,13 +119,32 @@ def home():
 def bookpage(title = ''):
     cur.execute(("SELECT * FROM book where title = '{0}';").format(title))
     data = cur.fetchone()
+    b = book_dt(data)
+    
+    cur.execute(("SELECT * FROM review{0} ORDER BY time;").format(b.number))
+    review_str=''
+    review_num = 0
+    for i in range(99):
+        data = cur.fetchone()
+        if data is None:
+            if review_num == 0:
+                review_str+='本のレビューはありません。'
+            break
+        else:
+            r = review_dt(data)
+        
+            review_num += 1
+            review_str+=('<h4>{0} ☆{2}</h4><p>by {1} - {4}</p><p>{3}</p>').format(r.title,r.name,r.rank,r.text,r.time)
+            
     return render_template(
         'book.html',
         year=datetime.now().year,
-        title=data[1],
-        review = "test",
-        lend = data[6]
-    )
+        title=b.title,
+        img=b.img_url,
+        review_num=review_num,
+        review_main = review_str,
+        lend = "貸し出し中です。" if b.lend else "貸し出し可能です。"
+    )    
 
 @app.route('/contact')
 def contact():
