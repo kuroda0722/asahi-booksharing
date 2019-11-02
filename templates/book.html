@@ -1,11 +1,22 @@
 {% extends "layout.html" %}
 
 {% block content %}
+<div class="row">
+	<div class="col-md-12 ">
+		<h2>{{ title }}</h2>
+		<p>{{ lend }}</p>
+	</div>
+	<div class="col-md-3 col-sm-4 col-xs-6 ">
+		<img src = "{{img}}"  class="img-responsive">
+	</div>
+	<div class="col-md-9 col-sm-12 col-xs-12 ">
+		<h3>レビュー一覧 {{review_num}}件</h3>
+		<p>{{review_main | safe}}</p>
 
-<h2>{{ title }}.</h2>
-<h3>{{ review | safe}}</h3>
-<h3>{{ lend }}</h3>
-
-<p>Use this area to provide additional information.</p>
-
+		<p><details>
+		<summary>レビューを書く</summary>
+		ここでかくよ
+		</details></p>
+	</div>
+</div>
 {% endblock %}
