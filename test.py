@@ -118,7 +118,12 @@ def home():
 
 @app.route('/book', methods=["GET", "POST"])
 @app.route('/book/<title>', methods=["GET", "POST"])
-def bookpage(title = ''):
+@app.route('/book/<title>/<delete>', methods=["GET", "POST"])
+def bookpage(title = '',delete = ''):
+    if delete== '1':
+        return  Response('''
+            削除してよろしいですか？
+            ''')
     cur.execute(("SELECT * FROM book where title = '{0}';").format(title))
     data = cur.fetchone()
     b = book_dt(data)
@@ -148,10 +153,9 @@ def bookpage(title = ''):
             break
         else:
             r = review_dt(data)
-        
             review_num += 1
             review_str+=('<h4>{0} ☆{2}</h4><p>by {1} - {4}</p><p>{3}</p>').format(r.title,r.name,r.rank,r.text,r.time)
-    
+            review_str+= '<a href = "/book/{0}/1"><button type="submit" class="btn btn-warning">削除</button></a>'.format(b.title)
     new_review = review_dt()
     rev = ['selected',0,0,0,0,0]
     input_error = ''
@@ -186,7 +190,7 @@ def bookpage(title = ''):
             cur.execute("SELECT MAX(number) FROM book;")
             data = cur.fetchone()
             num = data[0]+1
-            s = ("INSERT INTO review{0} VALUES ({1}, {2}, '{3}','{4}','{5}','{6}');").format(b.number,num,new_review.rank,new_review.name,new_review.text,datetime.now(),new_review.title)
+            s = ("""INSERT INTO review{0} VALUES ({1}, {2}, '{3}','{4}','{5}','{6}');""").format(b.number,num,new_review.rank,new_review.name,new_review.text,datetime.now(),new_review.title)
             print(s)
             cur.execute(s)
             conn.commit()
@@ -238,7 +242,7 @@ def protected():
 
         title = request.form["name"]
         img_url = request.form["image"]
-        s = ("INSERT INTO book VALUES ({0}, '{1}', '{2}',{3},'{4}','{5}',{6},'{7}');").format(num,title,img_url,1,"a","a",0,datetime.now())
+        s = ("""INSERT INTO book VALUES ({0}, '{1}', '{2}',{3},'{4}','{5}',{6},'{7}');""").format(num,title,img_url,1,"a","a",0,datetime.now())
         print(s)
         cur.execute(s)
         conn.commit()
