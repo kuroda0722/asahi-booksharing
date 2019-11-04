@@ -1,23 +1,46 @@
 {% extends "layout.html" %}
-
 {% block content %}
     <div class="row">
-        <div class="col-md-4 col-sm-12">
-            <img src="{{img}}" class="img-responsive">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <h2>{{ title }}</h2>
+            <p>{{ lend }}</p>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-8 col-sm-12">
-            <h2>{{ title }}</h2>
-            <p>{{ lend }}</p>
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <img src="{{img}}" class="img-responsive">
+        </div>
+        <div class="col-md-8 col-sm-6 col-xs-12">
             <h3>レビュー一覧 {{review_num}}件</h3>
             <p>{{review_main | safe}}</p>
-            <p>
-                <details>
-                    <summary>レビューを書く</summary>
-                    ここでかくよ
-                </details>
-            </p>
+            <form method="post">
+                <h4>レビューを書く</h4>
+                {{input_error | safe}}
+                <div class="form-group">
+                    <label>名前</label>
+                    <input class="form-control" placeholder="Name" name="name" value="{{re_name}}">
+                </div>
+                <div class="form-group">
+                    <label>評価</label>
+                    <select class="form-control" name="rank">
+                        <option value="rank0" {{re_rank0}}>選択してください</option>
+                        <option value="rank1" {{re_rank1}}>★☆☆☆☆</option>
+                        <option value="rank2" {{re_rank2}}>★★☆☆☆</option>
+                        <option value="rank3" {{re_rank3}}>★★★☆☆</option>
+                        <option value="rank4" {{re_rank4}}>★★★★☆</option>
+                        <option value="rank5" {{re_rank5}}>★★★★★</option>
+                    </select><br>
+                </div>
+                <div class="form-group">
+                    <label>タイトル</label>
+                    <input class="form-control" placeholder="Title" name="title" value="{{re_title}}">
+                </div>
+                <div class="form-group">
+                    <label>本文</label>
+                    <textarea name="main" class="form-control" placeholder="レビューを入力してください。" cols="30" rows="8" style="max-width: 600px;">{{re_text}}</textarea>
+                </div>
+                <button type="submit" class="btn btn-default">投稿</button>
+            </form>
         </div>
     </div>
-            {% endblock %}
+    {% endblock %}

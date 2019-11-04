@@ -52,19 +52,21 @@ for i in users.values():
 
 
 class review_dt:
-    def __init__(self):
-        self.number = 0
-        self.rank = 0
-        self.name = ''
-        self.text = ''
-        self.time = ''
-    def __init__(self,data):
-        self.number = data[0]
-        self.name = data[2]
-        self.rank = data[1]
-        self.text = data[3]
-        self.time= data[4]
-        self.title = data[5]
+    def __init__(self,data = None):
+        if data is None:
+            self.number = 0
+            self.rank = 0
+            self.name = ''
+            self.text = ''
+            self.time = ''
+            self.title = ''
+        else:
+            self.number = data[0]
+            self.name = data[2]
+            self.rank = data[1]
+            self.text = data[3]
+            self.time= data[4]
+            self.title = data[5]
 
 class chat_dt:
     def __init__(self):
@@ -106,7 +108,7 @@ def home():
         else:
             b = book_dt(data)
             str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><a href="/book/{0}"><h4>{0}</h4><p><img src = "{1}" class="img-responsive"></p></a></div>').format(b.title,b.img_url)
-            
+          
     return render_template(
         'index.html',
         title='Home Page',
@@ -114,14 +116,28 @@ def home():
         message=str
     )
 
-@app.route('/book')
-@app.route('/book/<title>')
+@app.route('/book', methods=["GET", "POST"])
+@app.route('/book/<title>', methods=["GET", "POST"])
 def bookpage(title = ''):
     cur.execute(("SELECT * FROM book where title = '{0}';").format(title))
     data = cur.fetchone()
     b = book_dt(data)
-    
-    cur.execute(("SELECT * FROM review{0} ORDER BY time;").format(b.number))
+    cur.execute(("SELECT * FROM information_schema.tables WHERE table_name = 'review{}';").format(b.number))
+    data = cur.fetchone()
+    if data is None:
+        str = '''
+            CREATE TABLE review{0}(
+            number int,
+            rank int,
+            name varchar(32),
+            text varchar(1024),
+            time timestamp,
+            title varchar(64)
+            );
+        '''.format(b.number)
+        cur.execute(str)
+        conn.commit()
+    cur.execute(("SELECT * FROM review{0} ORDER BY time DESC;").format(b.number))
     review_str=''
     review_num = 0
     for i in range(99):
@@ -135,7 +151,49 @@ def bookpage(title = ''):
         
             review_num += 1
             review_str+=('<h4>{0} ☆{2}</h4><p>by {1} - {4}</p><p>{3}</p>').format(r.title,r.name,r.rank,r.text,r.time)
-            
+    
+    new_review = review_dt()
+    rev = ['selected',0,0,0,0,0]
+    input_error = ''
+    if(request.method == "POST"):
+        new_review.name = request.form["name"]        
+        new_review.rank = request.form["rank"]        
+        new_review.title = request.form["title"]        
+        new_review.text = request.form["main"]
+
+        if new_review.rank == 'rank5':
+            rev[5] = 'selected'
+            new_review.rank = 5
+        elif new_review.rank == 'rank1':
+            rev[1] = 'selected'
+            new_review.rank = 1
+        elif new_review.rank == 'rank2':
+            rev[2] = 'selected'
+            new_review.rank = 2
+        elif new_review.rank == 'rank3':
+            rev[3] = 'selected'
+            new_review.rank = 3
+        elif new_review.rank == 'rank4':
+            rev[4] = 'selected'
+            new_review.rank = 4
+        else:
+            rev[0] = 'selected'
+            new_review.rank = 0
+
+        if(new_review.name == '' or new_review.rank == 0 or  new_review.title == '' or new_review.text == ''):
+            input_error = '<div class="alert alert-danger" role="alert">入力エラーです。</div>'
+        else:
+            cur.execute("SELECT MAX(number) FROM book;")
+            data = cur.fetchone()
+            num = data[0]+1
+            s = ("INSERT INTO review{0} VALUES ({1}, {2}, '{3}','{4}','{5}','{6}');").format(b.number,num,new_review.rank,new_review.name,new_review.text,datetime.now(),new_review.title)
+            print(s)
+            cur.execute(s)
+            conn.commit()
+            return  Response('''
+            <meta http-equiv="Refresh" content="0;URL=../book/{0}">
+            '''.format(b.title))
+    
     return render_template(
         'book.html',
         year=datetime.now().year,
@@ -143,7 +201,10 @@ def bookpage(title = ''):
         img=b.img_url,
         review_num=review_num,
         review_main = review_str,
-        lend = "貸し出し中です。" if b.lend else "貸し出し可能です。"
+        lend = "貸し出し中です。" if b.lend else "貸し出し可能です。",
+        re_name = new_review.name, re_title = new_review.title, re_text = new_review.text,
+        re_rank0 = rev[0],re_rank1 = rev[1],re_rank2 = rev[2],re_rank3 = rev[3],re_rank4 = rev[4],re_rank5 = rev[5],
+        input_error = input_error
     )    
 
 @app.route('/contact')
