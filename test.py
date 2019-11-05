@@ -118,15 +118,30 @@ def home():
 
 @app.route('/book', methods=["GET", "POST"])
 @app.route('/book/<title>', methods=["GET", "POST"])
-@app.route('/book/<title>/<delete>', methods=["GET", "POST"])
-def bookpage(title = '',delete = ''):
-    if delete== '1':
-        return  Response('''
-            削除してよろしいですか？
-            ''')
+@app.route('/book/<title>/<command>/<val>', methods=["GET", "POST"])
+def bookpage(title = '',command = '',val=''):
     cur.execute(("SELECT * FROM book where title = '{0}';").format(title))
     data = cur.fetchone()
     b = book_dt(data)
+    
+    if command == 'delete':
+        if(request.method == "GET"):
+            return  Response('''
+                削除してよろしいですか？<br>
+                <form method="post"><button value="yes" name="name">はい</button><button value="no" name="name">いいえ</button></form>
+                '''.format(title))
+        else:
+            flag = request.form["name"]
+            if (flag == 'yes'):
+                cur.execute(("DELETE FROM review{0} where number = {1};").format(b.number,val))
+                return  Response('''
+                <meta http-equiv="Refresh" content="0;URL=../book/{0}">
+                '''.format(b.title))
+            else:
+                return  Response('''
+                <meta http-equiv="Refresh" content="0;URL=../book/{0}">
+                '''.format(b.title))
+
     cur.execute(("SELECT * FROM information_schema.tables WHERE table_name = 'review{}';").format(b.number))
     data = cur.fetchone()
     if data is None:
@@ -155,7 +170,7 @@ def bookpage(title = '',delete = ''):
             r = review_dt(data)
             review_num += 1
             review_str+=('<h4>{0} ☆{2}</h4><p>by {1} - {4}</p><p>{3}</p>').format(r.title,r.name,r.rank,r.text,r.time)
-            review_str+= '<a href = "/book/{0}/1"><button type="submit" class="btn btn-warning">削除</button></a>'.format(b.title)
+            review_str+= '<a href = "/book/{0}/delete/{1}"><button type="submit" class="btn btn-warning">削除</button></a>'.format(b.title,r.number)
     new_review = review_dt()
     rev = ['selected',0,0,0,0,0]
     input_error = ''
@@ -187,15 +202,17 @@ def bookpage(title = '',delete = ''):
         if(new_review.name == '' or new_review.rank == 0 or  new_review.title == '' or new_review.text == ''):
             input_error = '<div class="alert alert-danger" role="alert">入力エラーです。</div>'
         else:
-            cur.execute("SELECT MAX(number) FROM book;")
+            cur.execute("SELECT MAX(number) FROM review{0};".format(b.number))
             data = cur.fetchone()
-            num = data[0]+1
+            num = 0
+            if data[0] is not None:
+                 num = int(data[0])+1
             s = ("""INSERT INTO review{0} VALUES ({1}, {2}, '{3}','{4}','{5}','{6}');""").format(b.number,num,new_review.rank,new_review.name,new_review.text,datetime.now(),new_review.title)
             print(s)
             cur.execute(s)
             conn.commit()
             return  Response('''
-            <meta http-equiv="Refresh" content="0;URL=../book/{0}">
+            <meta http-equiv="Refresh" content="0;URL=/book/{0}">
             '''.format(b.title))
     
     return render_template(
