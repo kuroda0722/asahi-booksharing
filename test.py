@@ -128,7 +128,7 @@ def bookpage(title = '',command = '',val=''):
         if(request.method == "GET"):
             return  Response('''
                 削除してよろしいですか？<br>
-                <form method="post"><button value="yes" name="name">はい</button><button value="no" name="name">いいえ</button></form>
+                <form method="post"><button value="yes" name="name">はい</button><button value="no" name="name2">いいえ</button></form>
                 '''.format(title))
         else:
             flag = request.form["name"]
