@@ -142,7 +142,7 @@ def bookpage(title = '',command = '',val=''):
                 <meta http-equiv="Refresh" content="0;URL=../book/{0}">
                 '''.format(b.title))
 
-    cur.execute(("SELECT * FROM information_schema.tables WHERE table_name = 'review{}';").format(b.number))
+    cur.execute(("SELECT * FROM information_schema.tables WHERE table_name = 'review{0}';").format(b.number))
     data = cur.fetchone()
     if data is None:
         str = '''
