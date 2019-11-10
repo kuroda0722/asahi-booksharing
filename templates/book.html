@@ -3,12 +3,23 @@
 <div class="row">
     <div class="col-md-12 col-sm-12 col-xs-12">
         <h2>{{ title }}</h2>
-        <p>{{ lend }}</p>
     </div>
 </div>
 <div class="row">
     <div class="col-md-4 col-sm-6 col-xs-12">
         <img src="{{img}}" class="img-responsive">
+    </div>
+    <div class="col-md-8 col-sm-6 col-xs-12">
+        <h3>本を予約</h3>
+        {{ lend | safe}}
+        {{reserve_input_error | safe}}
+        <form method="post">
+            <div class="form-group">
+                <label>名前</label>
+                <input class="form-control" placeholder="Name" name="reserver_name">
+            </div>
+            <button type="submit" class="btn btn-primary" name="action" value="submit_reserve">予約</button>
+        </form>
     </div>
     <div class="col-md-8 col-sm-6 col-xs-12">
         <h3>レビュー一覧 {{review_num}}件</h3>
@@ -39,7 +50,7 @@
                 <label>本文</label>
                 <textarea name="main" class="form-control" placeholder="レビューを入力してください。" cols="30" rows="8" style="max-width: 600px;">{{re_text}}</textarea>
             </div>
-            <button type="submit" class="btn btn-primary">投稿</button>
+            <button type="submit" class="btn btn-primary" name = "action" value = "submit_review">投稿</button>
         </form>
     </div>
 </div>

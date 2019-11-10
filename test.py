@@ -51,6 +51,17 @@ for i in users.values():
     user_check[i.name]["id"] = i.id
 
 
+class reserver_dt():
+    def __init__(self,data = None):
+        if data is None:
+            self.number = 0
+            self.name = ''
+            self.time = ''
+        else:
+            self.number = data[0]
+            self.name = data[1]
+            self.time = data[2]
+
 class review_dt:
     def __init__(self,data = None):
         if data is None:
@@ -107,7 +118,7 @@ def home():
             break
         else:
             b = book_dt(data)
-            str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><a href="/book/{0}"><h4>{0}</h4><p><img src = "{1}" class="img-responsive"></p></a></div>').format(b.title,b.img_url)
+            str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><a href="/book/{0}"><p><img src = "{1}" class="img-responsive"></p></a></div>').format(b.title,b.img_url)
           
     return render_template(
         'index.html',
@@ -123,17 +134,20 @@ def bookpage(title = '',command = '',val=''):
     cur.execute(("SELECT * FROM book where title = '{0}';").format(title))
     data = cur.fetchone()
     b = book_dt(data)
-    
-    if command == 'delete':
+
+    if command == 'cancel':
         if(request.method == "GET"):
             return  Response('''
-                削除してよろしいですか？<br>
-                <form method="post"><button value="yes" name="name">はい</button><button value="no" name="name2">いいえ</button></form>
+                予約をキャンセルしますか？<br>
+                <form method="post"><button value="yes" name="name">はい</button><button value="no" name="name">いいえ</button></form>
                 '''.format(title))
         else:
             flag = request.form["name"]
             if (flag == 'yes'):
-                cur.execute(("DELETE FROM review{0} where number = {1};").format(b.number,val))
+                s = ("DELETE FROM reserver{0} where number = {1};").format(b.number,val)
+                print (s)
+                cur.execute(s)
+                conn.commit()
                 return  Response('''
                 <meta http-equiv="Refresh" content="0;URL=../book/{0}">
                 '''.format(b.title))
@@ -142,6 +156,64 @@ def bookpage(title = '',command = '',val=''):
                 <meta http-equiv="Refresh" content="0;URL=../book/{0}">
                 '''.format(b.title))
 
+    if command == 'delete':
+        if(request.method == "GET"):
+            return  Response('''
+                削除してよろしいですか？<br>
+                <form method="post"><button value="yes" name="name">はい</button><button value="no" name="name">いいえ</button></form>
+                '''.format(title))
+        else:
+            flag = request.form["name"]
+            if (flag == 'yes'):
+                s = ("DELETE FROM review{0} where number = {1};").format(b.number,val)
+                print (s)
+                cur.execute(s)
+                conn.commit()
+                return  Response('''
+                <meta http-equiv="Refresh" content="0;URL=../book/{0}">
+                '''.format(b.title))
+            else:
+                return  Response('''
+                <meta http-equiv="Refresh" content="0;URL=../book/{0}">
+                '''.format(b.title))
+
+    #show reserver
+    cur.execute(("SELECT * FROM information_schema.tables WHERE table_name = 'reserver{0}';").format(b.number))
+    data = cur.fetchone()
+    if data is None:
+        str = '''
+            CREATE TABLE reserver{0}(
+            number int,
+            name varchar(32),
+            time timestamp
+            );
+        '''.format(b.number)
+        cur.execute(str)
+        conn.commit()
+    cur.execute(("SELECT * FROM reserver{0} ORDER BY time;").format(b.number))
+    reserver_str=''
+    reserver_num = 0
+    for i in range(99):
+        data = cur.fetchone()
+        if data is None:
+            if reserver_num == 0:
+                b.lend = False
+            break
+        else:
+            b.lend = True
+            r = reserver_dt(data)
+            reserver_num+=1
+            reserver_str += '<p>{0}  '.format(r.name)
+            reserver_str += '<a href = "/book/{0}/cancel/{1}"><button type="submit" class="btn-xs">キャンセル</button></a></p>'.format(b.title,r.number)
+    if b.lend:
+        reserver_str = '<h4>貸し出し中です。</h4><h5>予約者一覧</h5>' + reserver_str
+    else:
+        reserver_str = '<h4>貸し出し可能です。</h4>'
+    
+    cur.execute(("UPDATE book SET lend = {0} WHERE number = {1};").format(int(b.lend),b.number))
+    conn.commit()
+
+    #show review
     cur.execute(("SELECT * FROM information_schema.tables WHERE table_name = 'review{0}';").format(b.number))
     data = cur.fetchone()
     if data is None:
@@ -170,50 +242,70 @@ def bookpage(title = '',command = '',val=''):
             r = review_dt(data)
             review_num += 1
             review_str+=('<h4>{0} ☆{2}</h4><p>by {1} - {4}</p><p>{3}</p>').format(r.title,r.name,r.rank,r.text,r.time)
-            review_str+= '<a href = "/book/{0}/delete/{1}"><button type="submit" class="btn btn-warning">削除</button></a>'.format(b.title,r.number)
+            review_str+= '<a href = "/book/{0}/delete/{1}"><button type="submit" class="btn-xs">削除</button></a>'.format(b.title,r.number)
     new_review = review_dt()
     rev = ['selected',0,0,0,0,0]
     input_error = ''
+    reserve_input_error = ''
     if(request.method == "POST"):
-        new_review.name = request.form["name"]        
-        new_review.rank = request.form["rank"]        
-        new_review.title = request.form["title"]        
-        new_review.text = request.form["main"]
-
-        if new_review.rank == 'rank5':
-            rev[5] = 'selected'
-            new_review.rank = 5
-        elif new_review.rank == 'rank1':
-            rev[1] = 'selected'
-            new_review.rank = 1
-        elif new_review.rank == 'rank2':
-            rev[2] = 'selected'
-            new_review.rank = 2
-        elif new_review.rank == 'rank3':
-            rev[3] = 'selected'
-            new_review.rank = 3
-        elif new_review.rank == 'rank4':
-            rev[4] = 'selected'
-            new_review.rank = 4
+        if request.form["action"] == 'submit_reserve':
+            reserver_name = request.form["reserver_name"]
+            if(reserver_name == ''):
+                reserve_input_error = '<div class="alert alert-danger" role="alert">名前を入力してください。</div>'
+            else:
+                cur.execute("SELECT MAX(number) FROM reserver{0};".format(b.number))
+                data = cur.fetchone()
+                num = 0
+                if data[0] is not None:
+                        num = int(data[0])+1
+                print(reserver_name)
+                s = ("""INSERT INTO reserver{0} VALUES ({1}, '{2}', '{3}');""").format(b.number,num,reserver_name,"{0:%Y/%m/%d %H:%M:%S}".format(datetime.now()),new_review.title)
+                print(s)
+                cur.execute(s)
+                conn.commit()
+                return  Response('''
+                    <meta http-equiv="Refresh" content="0;URL=/book/{0}">
+                    '''.format(b.title))
         else:
-            rev[0] = 'selected'
-            new_review.rank = 0
+            new_review.name = request.form["name"]        
+            new_review.rank = request.form["rank"]        
+            new_review.title = request.form["title"]        
+            new_review.text = request.form["main"]
 
-        if(new_review.name == '' or new_review.rank == 0 or  new_review.title == '' or new_review.text == ''):
-            input_error = '<div class="alert alert-danger" role="alert">入力エラーです。</div>'
-        else:
-            cur.execute("SELECT MAX(number) FROM review{0};".format(b.number))
-            data = cur.fetchone()
-            num = 0
-            if data[0] is not None:
-                 num = int(data[0])+1
-            s = ("""INSERT INTO review{0} VALUES ({1}, {2}, '{3}','{4}','{5}','{6}');""").format(b.number,num,new_review.rank,new_review.name,new_review.text,datetime.now(),new_review.title)
-            print(s)
-            cur.execute(s)
-            conn.commit()
-            return  Response('''
-            <meta http-equiv="Refresh" content="0;URL=/book/{0}">
-            '''.format(b.title))
+            if new_review.rank == 'rank5':
+                rev[5] = 'selected'
+                new_review.rank = 5
+            elif new_review.rank == 'rank1':
+                rev[1] = 'selected'
+                new_review.rank = 1
+            elif new_review.rank == 'rank2':
+                rev[2] = 'selected'
+                new_review.rank = 2
+            elif new_review.rank == 'rank3':
+                rev[3] = 'selected'
+                new_review.rank = 3
+            elif new_review.rank == 'rank4':
+                rev[4] = 'selected'
+                new_review.rank = 4
+            else:
+                rev[0] = 'selected'
+                new_review.rank = 0
+
+            if(new_review.name == '' or new_review.rank == 0 or  new_review.title == '' or new_review.text == ''):
+                input_error = '<div class="alert alert-danger" role="alert">入力エラーです。</div>'
+            else:
+                cur.execute("SELECT MAX(number) FROM review{0};".format(b.number))
+                data = cur.fetchone()
+                num = 0
+                if data[0] is not None:
+                     num = int(data[0])+1
+                s = ("""INSERT INTO review{0} VALUES ({1}, {2}, '{3}','{4}','{5}','{6}');""").format(b.number,num,new_review.rank,new_review.name,new_review.text,"{0:%Y/%m/%d %H:%M:%S}".format(datetime.now()),new_review.title)
+                print(s)
+                cur.execute(s)
+                conn.commit()
+                return  Response('''
+                <meta http-equiv="Refresh" content="0;URL=/book/{0}">
+                '''.format(b.title))
     
     return render_template(
         'book.html',
@@ -222,10 +314,11 @@ def bookpage(title = '',command = '',val=''):
         img=b.img_url,
         review_num=review_num,
         review_main = review_str,
-        lend = "貸し出し中です。" if b.lend else "貸し出し可能です。",
+        lend = reserver_str,
         re_name = new_review.name, re_title = new_review.title, re_text = new_review.text,
         re_rank0 = rev[0],re_rank1 = rev[1],re_rank2 = rev[2],re_rank3 = rev[3],re_rank4 = rev[4],re_rank5 = rev[5],
-        input_error = input_error
+        input_error = input_error,
+        reserve_input_error = reserve_input_error
     )    
 
 @app.route('/contact')
@@ -259,7 +352,7 @@ def protected():
 
         title = request.form["name"]
         img_url = request.form["image"]
-        s = ("""INSERT INTO book VALUES ({0}, '{1}', '{2}',{3},'{4}','{5}',{6},'{7}');""").format(num,title,img_url,1,"a","a",0,datetime.now())
+        s = ("""INSERT INTO book VALUES ({0}, '{1}', '{2}',{3},'{4}','{5}',{6},'{7}');""").format(num,title,img_url,1,"a","a",0,"{0:%Y/%m/%d %H:%M:%S}".format(datetime.now()))
         print(s)
         cur.execute(s)
         conn.commit()
