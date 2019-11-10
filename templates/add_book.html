@@ -4,11 +4,17 @@
 
 <h2>本を追加</h2>
 <form action="#" method="post">
-	<p>本の名前<br>
-	<input type="text" name="name"></p>
-	<p>画像（URL）<br>
-	<input type="text" name="image"></p>
-	<p><input type="submit" value="投稿"></p>
+    <p>
+        本の名前<br>
+        <input type="text" name="name">
+    </p>
+    <p>
+        画像（URL）<br>
+        <input type="text" name="image">
+    </p>
+    <p><input type="submit" value="投稿"></p>
 </form>
+<h2>本を削除</h2>
+{{ message |safe}}
 <a href='/logout/'>Logout</a>
 {% endblock %}

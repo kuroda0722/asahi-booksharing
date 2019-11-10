@@ -14,12 +14,6 @@ conn = psycopg2.connect(\
     database='d3tspi511bpse4',\
     port=5432) 
 cur = conn.cursor()
-cur.execute("SELECT * FROM sample;")
-results = cur.fetchone()
-print(results)
-results = cur.fetchone()
-print(results)
-conn.commit()
 
 app = Flask(__name__)
 
@@ -111,7 +105,7 @@ class book_dt:
 def home():
     """Renders the home page."""
     str = ''
-    cur.execute("SELECT * FROM book;")
+    cur.execute("SELECT * FROM book ORDER BY time;")
     for i in range(99):
         data = cur.fetchone()
         if data is None:
@@ -241,8 +235,19 @@ def bookpage(title = '',command = '',val=''):
         else:
             r = review_dt(data)
             review_num += 1
-            review_str+=('<h4>{0} ☆{2}</h4><p>by {1} - {4}</p><p>{3}</p>').format(r.title,r.name,r.rank,r.text,r.time)
-            review_str+= '<a href = "/book/{0}/delete/{1}"><button type="submit" class="btn-xs">削除</button></a>'.format(b.title,r.number)
+            review_str += """<div class = "col">"""
+            review_str+=('<p><span class="lead">{0} ').format(r.title)
+            review_str+='<font color = "#ffa500">'
+            for j in range(5):
+                if j < r.rank:
+                    review_str += "★"
+                else:
+                    review_str += "☆"
+            review_str+='</font></span> '
+            review_str+=(' by {0}  {1}  ').format(r.name,r.time)
+            review_str+= '<a href = "/book/{0}/delete/{1}"><button type="submit" class="btn-xs">削除</button></a></p>'.format(b.title,r.number)
+            review_str+=('<p>{0}</p>').format(r.text)
+            review_str += '</div>'
     new_review = review_dt()
     rev = ['selected',0,0,0,0,0]
     input_error = ''
@@ -345,6 +350,21 @@ def about():
 @app.route('/add_book/', methods=["GET", "POST"])
 @login_required
 def protected():
+    str = ''
+    cur.execute("SELECT * FROM book ORDER BY time;")
+    for i in range(99):
+        data = cur.fetchone()
+        if data is None:
+            break
+        else:
+            b = book_dt(data)
+            str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><a href="/delete_book/{0}"><p><img src = "{1}" class="img-responsive"></p></a></div>').format(b.title,b.img_url)
+          
+    return render_template(
+        'add_book.html',
+        message=str
+    )
+
     if(request.method == "POST"):
         cur.execute("SELECT MAX(number) FROM book;")
         data = cur.fetchone()
@@ -356,9 +376,37 @@ def protected():
         print(s)
         cur.execute(s)
         conn.commit()
-        return render_template('add_book.html')
+        return render_template('add_book.html',message=str)
     else:
-        return render_template('add_book.html')
+        return render_template('add_book.html',message=str)
+
+@login_required
+@app.route('/delete_book/<title>', methods=["GET", "POST"])
+def delete_book(title):
+    cur.execute(("SELECT * FROM book where title = '{0}';").format(title))
+    data = cur.fetchone()
+    b = book_dt(data)
+    if(request.method == "GET"):
+        return  Response('''
+            本を削除しますか？<br>
+            <form method="post"><button value="yes" name="name">はい</button><button value="no" name="name">いいえ</button></form>
+            '''.format(title))
+    else:
+        flag = request.form["name"]
+        if flag == 'yes':
+            cur.execute("DELETE FROM book where number = {0};".format(b.number))
+            conn.commit()
+            cur.execute("DROP TABLE review{0};".format(b.number))
+            conn.commit()
+            cur.execute("DROP TABLE reserver{0};".format(b.number))
+            conn.commit()
+            return  Response('''
+                <meta http-equiv="Refresh" content="0;URL=../">
+                '''.format(b.title))
+        else:
+            return  Response('''
+                <meta http-equiv="Refresh" content="0;URL=../">
+                '''.format(b.title))
 
 # ログインパス
 @app.route('/login/', methods=["GET", "POST"])
