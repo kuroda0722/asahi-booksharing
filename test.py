@@ -360,11 +360,10 @@ def protected():
             b = book_dt(data)
             str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><a href="/delete_book/{0}"><p><img src = "{1}" class="img-responsive"></p></a></div>').format(b.title,b.img_url)
           
-    return render_template(
-        'add_book.html',
-        message=str
-    )
-
+        return render_template(
+            'add_book.html',
+            message=str
+        )
     if(request.method == "POST"):
         cur.execute("SELECT MAX(number) FROM book;")
         data = cur.fetchone()
