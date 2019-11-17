@@ -112,7 +112,7 @@ def home():
             break
         else:
             b = book_dt(data)
-            str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><a href="/book/{0}"><p><img src = "{1}" class="img-responsive"></p></a></div>').format(b.title,b.img_url)
+            str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><div ><a href="/book/{0}"><img src = "{1}" class="img-responsive" style="width: 300px; height: 420px;object-fit: contain;"></a></div></div>').format(b.title,b.img_url)
           
     return render_template(
         'index.html',
@@ -351,6 +351,7 @@ def about():
 @login_required
 def protected():
     str = ''
+    book_list = []
     cur.execute("SELECT * FROM book ORDER BY time;")
     for i in range(99):
         data = cur.fetchone()
@@ -358,8 +359,22 @@ def protected():
             break
         else:
             b = book_dt(data)
-            str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><a href="/delete_book/{0}"><p><img src = "{1}" class="img-responsive"></p></a></div>').format(b.title,b.img_url)
-          
+            book_list.append(b)
+            str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><div ><a href="/book/{0}"><img src = "{1}" class="img-responsive" style="width: 300px; height: 420px;object-fit: contain;"></a></div></div>').format(b.title,b.img_url)
+    str_reserver_list = ''
+    for b in book_list:
+        cur.execute("SELECT * FROM reserver{0} ORDER BY time;".format(b.number))
+        str_reserver_list += '<h4>' + b.title + '</h4>'
+        for i in range(99):
+            data = cur.fetchone()
+            if data is None:
+                if i == 0:
+                    str_reserver_list += '予約者なし'
+                break
+            else:
+                r = reserver_dt(data)
+                str_reserver_list += '<p>' + r.name + '  '+ "{0:%Y/%m/%d %H:%M:%S}".format(r.time) + '</p>'
+    print ( str_reserver_list)
     if(request.method == "POST"):
         cur.execute("SELECT MAX(number) FROM book;")
         data = cur.fetchone()
@@ -371,9 +386,8 @@ def protected():
         print(s)
         cur.execute(s)
         conn.commit()
-        return render_template('add_book.html',message=str)
     else:
-        return render_template('add_book.html',message=str)
+        return render_template('add_book.html',message=str,reserver_list=str_reserver_list)
 
 @login_required
 @app.route('/delete_book/<title>', methods=["GET", "POST"])
