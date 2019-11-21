@@ -42,15 +42,15 @@
                     <option value="rank5" {{re_rank5}}>★★★★★</option>
                 </select><br>
             </div>
+            <!--<div class="form-group">
+        <label>タイトル</label>
+        <input class="form-control" placeholder="Title" name="title" value="{{re_title}}">
+    </div>-->
             <div class="form-group">
-                <label>タイトル</label>
-                <input class="form-control" placeholder="Title" name="title" value="{{re_title}}">
-            </div>
-            <div class="form-group">
-                <label>本文</label>
+                <label>レビュー</label>
                 <textarea name="main" class="form-control" placeholder="レビューを入力してください。" cols="30" rows="8" style="max-width: 600px;">{{re_text}}</textarea>
             </div>
-            <button type="submit" class="btn btn-primary" name = "action" value = "submit_review">投稿</button>
+            <button type="submit" class="btn btn-primary" name="action" value="submit_review">投稿</button>
         </form>
     </div>
 </div>
