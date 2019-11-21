@@ -100,6 +100,20 @@ class book_dt:
         self.lend= data[6]
         self.time = data[7]
 
+
+def convert_newline(str):
+    i = str.find('\r')
+    if i == -1:
+        return str
+    str2 = ''
+    if i > 0:
+        str2 += str[:i]
+    str2 += '<br>'
+    if i+1 < len(str):
+        str2 += str[i+2:]
+    print (i,str2)
+    return str2
+
 @app.route('/')
 @app.route('/home')
 def home():
@@ -235,8 +249,8 @@ def bookpage(title = '',command = '',val=''):
         else:
             r = review_dt(data)
             review_num += 1
-            review_str += """<div class = "col">"""
-            review_str+=('<p><span class="lead">{0} ').format(r.title)
+            review_str += """<div class = "col panel pannel-default">"""
+            #review_str+=('<p><span class="lead">{0} ').format(r.title)
             review_str+='<font color = "#ffa500">'
             for j in range(5):
                 if j < r.rank:
@@ -274,8 +288,13 @@ def bookpage(title = '',command = '',val=''):
         else:
             new_review.name = request.form["name"]        
             new_review.rank = request.form["rank"]        
-            new_review.title = request.form["title"]        
+            new_review.title = 'notitle'#request.form["title"]        
             new_review.text = request.form["main"]
+            while True:
+                temp = new_review.text
+                new_review.text = convert_newline(new_review.text)
+                if temp == new_review.text:
+                    break
 
             if new_review.rank == 'rank5':
                 rev[5] = 'selected'
@@ -336,14 +355,12 @@ def contact():
         message='Your contact page.'
     )
 
-@app.route('/about')
-def about():
+@app.route('/rule')
+def rule():
     """Renders the about page."""
     return render_template(
-        'about.html',
-        title='About',
-        year=datetime.now().year,
-        message='Your application description page.'
+        'rule.html',
+        title='ルール'
     )
 
 # ログインしないと表示されないパス
