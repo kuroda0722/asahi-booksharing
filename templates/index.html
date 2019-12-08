@@ -5,13 +5,17 @@
     <div class="jumbotron">
         <h2>SharingEconomyBooks</h2>
         <p class="lead">借りたい本を選んでね</p>
-        <!--<p><a href="http://flask.pocoo.org/" class="btn btn-primary btn-large">Learn more &raquo;</a></p>-->
     </div>
 
-<div class="row">
-    <h2>本一覧</h2>
-    {{ message | safe}}
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <form method="post" class="pull-right">
+                <button type="submit" class="btn btn-primary" name="gacha" value="gacha">本ガチャ</button>
+            </form>
+        </div>
+        <h2>本一覧</h2>
+        {{ message | safe}}
 
-</div>
+    </div>
 
-{% endblock %}
+    {% endblock %}
