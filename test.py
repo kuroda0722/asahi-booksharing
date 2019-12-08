@@ -6,6 +6,7 @@ from collections import defaultdict
 import csv
 import os
 import psycopg2
+import random
 
 conn = psycopg2.connect(\
     host='ec2-54-235-92-43.compute-1.amazonaws.com',\
@@ -114,11 +115,12 @@ def convert_newline(str):
     print (i,str2)
     return str2
 
-@app.route('/')
-@app.route('/home')
+@app.route('/', methods=["GET", "POST"])
+@app.route('/home', methods=["GET", "POST"])
 def home():
     """Renders the home page."""
     str = ''
+    b_list = []
     cur.execute("SELECT * FROM book ORDER BY time;")
     for i in range(99):
         data = cur.fetchone()
@@ -126,14 +128,22 @@ def home():
             break
         else:
             b = book_dt(data)
+            b_list.append(b)
             str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><div ><a href="/book/{0}"><img src = "{1}" class="img-responsive" style="width: 300px; height: 420px;object-fit: contain;"></a></div></div>').format(b.title,b.img_url)
-          
-    return render_template(
-        'index.html',
-        title='Home Page',
-        year=datetime.now().year,
-        message=str
-    )
+    if(request.method == "POST"):
+        print(len(b_list))
+        n = len(b_list)
+        r = random.uniform(0, n-1)
+        return  Response('''
+                    <meta http-equiv="Refresh" content="0;URL=/book/{0}">
+                    '''.format(b_list[int(r)].title))
+    else:
+        return render_template(
+            'index.html',
+            title='Home Page',
+            year=datetime.now().year,
+            message=str
+        )
 
 @app.route('/book', methods=["GET", "POST"])
 @app.route('/book/<title>', methods=["GET", "POST"])
