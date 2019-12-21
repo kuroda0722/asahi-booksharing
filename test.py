@@ -387,21 +387,25 @@ def protected():
         else:
             b = book_dt(data)
             book_list.append(b)
-            str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><div ><a href="/book/{0}"><img src = "{1}" class="img-responsive" style="width: 300px; height: 420px;object-fit: contain;"></a></div></div>').format(b.title,b.img_url)
+            str += ('<div class="col-md-3 col-sm-4 col-xs-6 "><div ><a href="/delete_book/{0}"><img src = "{1}" class="img-responsive" style="width: 300px; height: 420px;object-fit: contain;"></a></div></div>').format(b.title,b.img_url)
     str_reserver_list = ''
     for b in book_list:
-        cur.execute("SELECT * FROM reserver{0} ORDER BY time;".format(b.number))
-        str_reserver_list += '<h4>' + b.title + '</h4>'
-        for i in range(99):
-            data = cur.fetchone()
-            if data is None:
-                if i == 0:
-                    str_reserver_list += '予約者なし'
-                break
-            else:
-                r = reserver_dt(data)
-                str_reserver_list += '<p>' + r.name + '  '+ "{0:%Y/%m/%d %H:%M:%S}".format(r.time) + '</p>'
-    print ( str_reserver_list)
+        cur.execute(("SELECT * FROM information_schema.tables WHERE table_name = 'reserver{0}';").format(b.number))
+        data = cur.fetchone()
+        if data is None:
+            str_reserver_list += '予約者なし'
+        else:
+            cur.execute("SELECT * FROM reserver{0} ORDER BY time;".format(b.number))
+            str_reserver_list += '<h4>' + b.title + '</h4>'
+            for i in range(99):
+                data = cur.fetchone()
+                if data is None:
+                    if i == 0:
+                        str_reserver_list += '予約者なし'
+                    break
+                else:
+                    r = reserver_dt(data)
+                    str_reserver_list += '<p>' + r.name + '  '+ "{0:%Y/%m/%d %H:%M:%S}".format(r.time) + '</p>'
     if(request.method == "POST"):
         cur.execute("SELECT MAX(number) FROM book;")
         data = cur.fetchone()
@@ -413,6 +417,9 @@ def protected():
         print(s)
         cur.execute(s)
         conn.commit()
+        return  Response('''
+        <meta http-equiv="Refresh" content="0;URL=/home">
+        ''')
     else:
         return render_template('add_book.html',message=str,reserver_list=str_reserver_list)
 
@@ -432,17 +439,25 @@ def delete_book(title):
         if flag == 'yes':
             cur.execute("DELETE FROM book where number = {0};".format(b.number))
             conn.commit()
-            cur.execute("DROP TABLE review{0};".format(b.number))
-            conn.commit()
-            cur.execute("DROP TABLE reserver{0};".format(b.number))
-            conn.commit()
+
+            cur.execute(("SELECT * FROM information_schema.tables WHERE table_name = 'review{0}';").format(b.number))
+            data = cur.fetchone()
+            if not data is None:
+                cur.execute("DROP TABLE review{0};".format(b.number))
+                conn.commit()
+
+            cur.execute(("SELECT * FROM information_schema.tables WHERE table_name = 'reserver{0}';").format(b.number))
+            data = cur.fetchone()
+            if not data is None:
+                cur.execute("DROP TABLE reserver{0};".format(b.number))
+                conn.commit()
             return  Response('''
                 <meta http-equiv="Refresh" content="0;URL=../">
-                '''.format(b.title))
+                ''')
         else:
             return  Response('''
                 <meta http-equiv="Refresh" content="0;URL=../">
-                '''.format(b.title))
+                ''')
 
 # ログインパス
 @app.route('/login/', methods=["GET", "POST"])
