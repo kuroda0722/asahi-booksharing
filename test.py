@@ -7,6 +7,7 @@ import csv
 import os
 import psycopg2
 import random
+import requests
 
 conn = psycopg2.connect(\
     host='ec2-54-235-92-43.compute-1.amazonaws.com',\
@@ -282,6 +283,7 @@ def bookpage(title = '',command = '',val=''):
             if(reserver_name == ''):
                 reserve_input_error = '<div class="alert alert-danger" role="alert">名前を入力してください。</div>'
             else:
+                #予約実行
                 cur.execute("SELECT MAX(number) FROM reserver{0};".format(b.number))
                 data = cur.fetchone()
                 num = 0
@@ -292,6 +294,16 @@ def bookpage(title = '',command = '',val=''):
                 print(s)
                 cur.execute(s)
                 conn.commit()
+                
+                line_notify_token = os.environ["LINE_TOKEN"]
+                line_notify_api = 'https://notify-api.line.me/api/notify'
+                message = '{0} 1} 予約しました'.format(b.number,num,reserver_name)
+
+
+                payload = {'message': message}
+                headers = {'Authorization': 'Bearer ' + line_notify_token}  # 発行したトークン
+                line_notify = requests.post(line_notify_api, data=payload, headers=headers)
+
                 return  Response('''
                     <meta http-equiv="Refresh" content="0;URL=/book/{0}">
                     '''.format(b.title))
