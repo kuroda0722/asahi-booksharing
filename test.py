@@ -167,6 +167,16 @@ def bookpage(title = '',command = '',val=''):
                 print (s)
                 cur.execute(s)
                 conn.commit()
+
+                line_notify_token = os.environ["LINE_TOKEN"]
+                line_notify_api = 'https://notify-api.line.me/api/notify'
+                line_message = '{0} {1} 予約キャンセルされました'.format(b.number,num,reserver_name)
+
+
+                payload = {'message': line_message}
+                headers = {'Authorization': 'Bearer ' + line_notify_token}  # 発行したトークン
+                line_notify = requests.post(line_notify_api, data=payload, headers=headers)
+
                 return  Response('''
                 <meta http-equiv="Refresh" content="0;URL=../book/{0}">
                 '''.format(b.title))
@@ -294,16 +304,16 @@ def bookpage(title = '',command = '',val=''):
                 print(s)
                 cur.execute(s)
                 conn.commit()
-                """
+                
                 line_notify_token = os.environ["LINE_TOKEN"]
                 line_notify_api = 'https://notify-api.line.me/api/notify'
-                line_message = '{0} {1} 予約しました'.format(b.number,num,reserver_name)
+                line_message = '{0} {1} 予約されました'.format(b.number,num,reserver_name)
 
 
                 payload = {'message': line_message}
                 headers = {'Authorization': 'Bearer ' + line_notify_token}  # 発行したトークン
                 line_notify = requests.post(line_notify_api, data=payload, headers=headers)
-                """
+                
                 return  Response('''
                     <meta http-equiv="Refresh" content="0;URL=/book/{0}">
                     '''.format(b.title))
