@@ -170,7 +170,7 @@ def bookpage(title = '',command = '',val=''):
 
                 line_notify_token = os.environ["LINE_TOKEN"]
                 line_notify_api = 'https://notify-api.line.me/api/notify'
-                line_message = '{0} {1} 予約キャンセルされました'.format(b.title,b.reserver)
+                line_message = '{0} 予約キャンセルされました'.format(b.title)
 
 
                 payload = {'message': line_message}
