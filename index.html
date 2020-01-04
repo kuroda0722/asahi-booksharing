@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+    <div class="jumbotron">
+        <h2>SharingEconomicsBooks</h2>
+        <p class="lead">借りたい本を選んでね</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <form method="post" class="pull-right">
+                <button type="submit" class="btn btn-primary" name="gacha" value="gacha">本ガチャ</button>
+            </form>
+        </div>
+        <h2>本一覧</h2>
+        {{ message | safe}}
+
+    </div>
+
+    {% endblock %}
